@@ -1,0 +1,5 @@
+{
+  "name": "Neural Architecture 3D Explorer",
+  "description": "A 3D interactive visualization of 7B Transformer and Wav2Vec 2.0 architectures, breaking down matrix multiplications, parameter counts, and data flow layer by layer.",
+  "requestFramePermissions": []
+}
