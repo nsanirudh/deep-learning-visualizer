@@ -22,11 +22,17 @@ export interface ProcessingStage {
   category: StageCategory;
   description: string;
   formulas: MathFormula[];
-  position: [number, number, number]; // 3D position
-  dimensions: [number, number, number]; // 3D size
+  position: [number, number, number];
+  dimensions: [number, number, number];
   color: string;
-  dimLabel: string; // Explicit dimension label to display on block
-  group?: string; // ID for grouping (e.g. 'layer_1')
+  dimLabel: string;
+  group?: string;
+}
+
+export interface ModelInfoItem {
+  label: string;
+  value: string;
+  detail?: string; // smaller third line, e.g. formula or footnote
 }
 
 export interface ModelConfig {
@@ -44,5 +50,8 @@ export interface ModelConfig {
     totalParams: string;
     vramTraining: string;
   };
+  paramBreakdown: ModelInfoItem[];
+  memoryBreakdown: ModelInfoItem[];
+  architectureNotes: string[];
   stages: ProcessingStage[];
 }

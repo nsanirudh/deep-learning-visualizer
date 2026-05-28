@@ -32,6 +32,31 @@ export const MODELS: Record<ModelType, ModelConfig> = {
       totalParams: "~6.47B (Blocks) / ~7B Total",
       vramTraining: "~112 GB (AdamW Mixed Precision)",
     },
+    paramBreakdown: [
+      { label: "Attention (W_q, W_k, W_v, W_o)", value: "4H² ≈ 67M / layer", detail: "4 × 4096² = 67,108,864 params" },
+      { label: "SwiGLU MLP (W_up, W_gate, W_down)", value: "3HI ≈ 135M / layer", detail: "3 × 4096 × 11008 = 135,266,304 params" },
+      { label: "RMSNorm scales", value: "~O(H) per norm", detail: "Tiny vs. matrices — often ignored in totals" },
+      { label: "Embedding W_embed", value: "V × H ≈ 131M", detail: "32,000 × 4096; often tied with output head" },
+      { label: "Total (32 layers + embed)", value: "32 × 202M + 131M ≈ 7B", detail: "6.47B in blocks + ~540M embed/head/norms" },
+    ],
+    memoryBreakdown: [
+      { label: "Weights BF16", value: "7B × 2B ≈ 14 GB", detail: "2 bytes per parameter" },
+      { label: "Gradients BF16", value: "7B × 2B ≈ 14 GB", detail: "Same shape as weights" },
+      { label: "Adam moments (m + v) FP32", value: "7B × 8B ≈ 56 GB", detail: "4B each for 1st and 2nd moment" },
+      { label: "FP32 master weights", value: "7B × 4B ≈ 28 GB", detail: "Used by optimizer for stable updates" },
+      { label: "Total (params + optimizer)", value: "≈ 112 GB", detail: "16 bytes/param formula: 2+2+8+4" },
+      { label: "Activations (B=1, S=2048)", value: "~512 MB residuals", detail: "Full activations (no checkpointing) far more — scales as B·S·H·L" },
+      { label: "Per-layer total (full fine-tune)", value: "≈ 3.23 GB / layer", detail: "404MB weights + 404MB grads + 1.6GB moments + 808MB master" },
+    ],
+    architectureNotes: [
+      "Decoder-only (causal): each token attends only to past tokens via causal mask.",
+      "Pre-LN form: X ← X + Attn(Norm(X)), then X ← X + MLP(Norm(X)).",
+      "RoPE positional encoding — no trainable positional parameters.",
+      "LLaMA-style: biases omitted in all linear layers (Q, K, V, W_o, MLP).",
+      "SwiGLU replaces standard FFN: (X·W_up) ⊙ swish(X·W_gate), then W_down.",
+      "Attention score matrix A is (B, n_h, S, S) — grows quadratically with sequence length.",
+      "FlashAttention avoids materialising the full S×S matrix, cutting activation memory.",
+    ],
     stages: [
       // --- INPUT ---
       {
@@ -384,6 +409,32 @@ export const MODELS: Record<ModelType, ModelConfig> = {
       totalParams: "~95M",
       vramTraining: "~1.6 GB",
     },
+    paramBreakdown: [
+      { label: "Attention per layer (with bias)", value: "4(H²+H) ≈ 2.36M", detail: "4(768²+768) = 4×590,592 = 2,362,368" },
+      { label: "FFN per layer (W1+W2+biases)", value: "2HF+F+H ≈ 4.72M", detail: "2×768×3072 + 3072 + 768 = 4,722,432" },
+      { label: "Total per Transformer layer", value: "≈ 7.1M / layer", detail: "Attn (2.36M) + FFN (4.72M) + norms" },
+      { label: "12 Transformer layers", value: "12 × 7.1M ≈ 85M", detail: "Plus LayerNorm params (tiny)" },
+      { label: "CNN feature encoder", value: "~10M", detail: "7 conv layers, 512 channels each" },
+      { label: "Feature projector (512→768)", value: "512 × 768 ≈ 393K", detail: "Bridge CNN output to Transformer hidden dim" },
+      { label: "Grand total", value: "~95M", detail: "CNN (~10M) + proj + 12 Transformer layers + head" },
+    ],
+    memoryBreakdown: [
+      { label: "Params only (BF16)", value: "95M × 2B ≈ 190 MB", detail: "2 bytes per parameter" },
+      { label: "Full training (16B/param)", value: "95M × 16B ≈ 1.52 GB", detail: "weights + grads + Adam moments + master" },
+      { label: "Activations (B=8, S=500)", value: "~B·S·H·L ≈ variable", detail: "S≈500 for 10s audio; residual stream ~2.3MB/layer" },
+      { label: "CNN activations", value: "Scales with T (raw frames)", detail: "T=160,000 for 10s @16kHz → reduces to S≈500 after CNN" },
+      { label: "Est. total training VRAM", value: "~1.6 GB", detail: "Small model — fits single consumer GPU" },
+    ],
+    architectureNotes: [
+      "Bidirectional (non-causal): full sequence attention, unlike decoder-only LLMs.",
+      "CNN front-end: 7 layers achieve 320× total downsampling (stride 5 then 2^6=64).",
+      "10s @16kHz → 160,000 samples → ~500 latent frames at H=768.",
+      "Positional encoding via convolutional relative position (Conv1D, not RoPE).",
+      "Standard LayerNorm (not RMSNorm); all biases present.",
+      "GELU activation in FFN (not SwiGLU).",
+      "Pretrained with contrastive loss over quantized representations; fine-tuned with CTC for ASR.",
+      "CTC head: linear 768→32 (vocab of characters/subwords + blank).",
+    ],
     stages: [
       {
         id: 'input_raw',
@@ -814,6 +865,32 @@ export const MODELS: Record<ModelType, ModelConfig> = {
       totalParams: "~7B",
       vramTraining: "~112 GB (Mixed Precision)",
     },
+    paramBreakdown: [
+      { label: "Temporal Transformer (backbone)", value: "32 × 202M ≈ 6.47B", detail: "Same block structure as LLaMA-7B" },
+      { label: "Depth Transformer (RVQ axis)", value: "L=6, H=1024", detail: "Small transformer; generates 8 RVQ codes per frame autoregressively" },
+      { label: "RVQ codebooks (8 levels)", value: "8 × 2048 × 256 ≈ 4M", detail: "Each codebook: 2048 entries of dim 256" },
+      { label: "Mimi codec (encoder + decoder)", value: "Conv + Transformer front-end", detail: "Achieves 12.5 Hz latent frame rate from 24kHz audio" },
+      { label: "Stream embeddings", value: "Audio: Σ W_aud^(q)[E^(q)] per level", detail: "Text: W_txt[T]; both projected to H=4096" },
+      { label: "Grand total", value: "~7B", detail: "Dominated by 32-layer Temporal Transformer" },
+    ],
+    memoryBreakdown: [
+      { label: "Temporal Transformer (16B/param)", value: "6.47B × 16B ≈ 103 GB", detail: "Weights + grads + Adam moments + master" },
+      { label: "Depth Transformer", value: "Small — L=6, H=1024", detail: "Adds ~hundreds of MB; negligible vs. 7B backbone" },
+      { label: "Mimi codec weights", value: "Typically frozen at inference", detail: "Pre-trained codec; not always fine-tuned" },
+      { label: "RVQ cache at inference", value: "B × S × 8 × int16", detail: "Audio token indices; very compact" },
+      { label: "Est. total training VRAM", value: "~112 GB+", detail: "Backbone alone ~103 GB; add codec, activations for real total" },
+    ],
+    architectureNotes: [
+      "Full-duplex speech model: simultaneously receives user audio and generates agent audio.",
+      "Based on Moshi (Kyutai) architecture — separate Temporal and Depth Transformer axes.",
+      "Temporal Transformer: causal attention across time frames (the 7B backbone).",
+      "Depth Transformer: autoregressive across the 8 RVQ depth levels per time frame.",
+      "Mimi codec: 24kHz audio → 12.5 Hz latent frames (1920 samples/frame stride).",
+      "RVQ: residual vector quantization into 8 codebooks, each with 2048 entries of dim 256.",
+      "Audio tokens E_u ∈ {0..2047}^(B×S×8); each frame described by 8 discrete codes.",
+      "Hybrid prompt: voice style + persona text + dialogue history concatenated as unified stream.",
+      "Text head and audio branch run in parallel from the same temporal state h_t.",
+    ],
     stages: [
       // --- INPUTS ---
       {
