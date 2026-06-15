@@ -293,17 +293,13 @@ const LayerGroupVisualizer: React.FC<{ stages: ProcessingStage[]; isDark: boolea
 
 // Director Component to handle cinematic panning and automatic orbit rotations
 const CameraDirector = ({
-  activeStage,
   autoRotate,
   autoRotateSpeed,
-  autoFocus,
   centerY,
   controlsRef,
 }: {
-  activeStage: ProcessingStage | null;
   autoRotate: boolean;
   autoRotateSpeed: number;
-  autoFocus: boolean;
   centerY: number;
   controlsRef: React.MutableRefObject<any>;
 }) => {
@@ -312,49 +308,25 @@ const CameraDirector = ({
 
   useFrame((state, delta) => {
     if (controlsRef.current) {
-      if (autoFocus && activeStage) {
-        // Find exact world coordinates (groups bottom center is -centerY + 5)
-        const groupOffsetY = -centerY + 5;
-        const targetWorldX = activeStage.position[0];
-        const targetWorldY = activeStage.position[1] + groupOffsetY;
-        const targetWorldZ = activeStage.position[2];
+      // Normal mode or passive Auto-Rotate
+      if (autoRotate) {
+        angleRef.current += autoRotateSpeed * 0.05 * delta;
+        const radius = 17.5;
+        const targetWorldY = centerY;
 
-        // Smoothly pan OrbitControls target
-        controlsRef.current.target.x = THREE.MathUtils.lerp(controlsRef.current.target.x, targetWorldX, 0.08);
+        controlsRef.current.target.x = THREE.MathUtils.lerp(controlsRef.current.target.x, 0, 0.08);
         controlsRef.current.target.y = THREE.MathUtils.lerp(controlsRef.current.target.y, targetWorldY, 0.08);
-        controlsRef.current.target.z = THREE.MathUtils.lerp(controlsRef.current.target.z, targetWorldZ, 0.08);
+        controlsRef.current.target.z = THREE.MathUtils.lerp(controlsRef.current.target.z, 0, 0.08);
 
-        // Position camera elegantly offset from target block
-        const desiredCamX = targetWorldX + 6.5;
-        const desiredCamY = targetWorldY + 1.8;
-        const desiredCamZ = targetWorldZ + 6.5;
+        const desiredCamX = Math.sin(angleRef.current) * radius;
+        const desiredCamY = targetWorldY + 2;
+        const desiredCamZ = Math.cos(angleRef.current) * radius;
 
-        camera.position.x = THREE.MathUtils.lerp(camera.position.x, desiredCamX, 0.06);
-        camera.position.y = THREE.MathUtils.lerp(camera.position.y, desiredCamY, 0.06);
-        camera.position.z = THREE.MathUtils.lerp(camera.position.z, desiredCamZ, 0.06);
+        camera.position.x = THREE.MathUtils.lerp(camera.position.x, desiredCamX, 0.04);
+        camera.position.y = THREE.MathUtils.lerp(camera.position.y, desiredCamY, 0.04);
+        camera.position.z = THREE.MathUtils.lerp(camera.position.z, desiredCamZ, 0.04);
 
         controlsRef.current.update();
-      } else {
-        // Normal mode or passive Auto-Rotate
-        if (autoRotate) {
-          angleRef.current += autoRotateSpeed * 0.05 * delta;
-          const radius = 17.5;
-          const targetWorldY = centerY;
-
-          controlsRef.current.target.x = THREE.MathUtils.lerp(controlsRef.current.target.x, 0, 0.08);
-          controlsRef.current.target.y = THREE.MathUtils.lerp(controlsRef.current.target.y, targetWorldY, 0.08);
-          controlsRef.current.target.z = THREE.MathUtils.lerp(controlsRef.current.target.z, 0, 0.08);
-
-          const desiredCamX = Math.sin(angleRef.current) * radius;
-          const desiredCamY = targetWorldY + 2;
-          const desiredCamZ = Math.cos(angleRef.current) * radius;
-
-          camera.position.x = THREE.MathUtils.lerp(camera.position.x, desiredCamX, 0.04);
-          camera.position.y = THREE.MathUtils.lerp(camera.position.y, desiredCamY, 0.04);
-          camera.position.z = THREE.MathUtils.lerp(camera.position.z, desiredCamZ, 0.04);
-
-          controlsRef.current.update();
-        }
       }
     }
   });
@@ -371,7 +343,6 @@ interface VisualizerProps {
   shadingStyle?: 'cyber' | 'clay' | 'wireframe';
   autoRotate?: boolean;
   autoRotateSpeed?: number;
-  autoFocus?: boolean;
   batchSize?: number;
   seqLength?: number;
   showParticles?: boolean;
@@ -386,7 +357,6 @@ export const Visualizer3D: React.FC<VisualizerProps> = ({
   shadingStyle = 'cyber',
   autoRotate = false,
   autoRotateSpeed = 2.0,
-  autoFocus = true,
   batchSize = 1,
   seqLength = 2048,
   showParticles = true,
@@ -451,10 +421,8 @@ export const Visualizer3D: React.FC<VisualizerProps> = ({
           <ContactShadows opacity={isDark ? 0.35 : 0.45} scale={45} blur={2.2} far={4} color={isDark ? '#000000' : '#334155'} />
 
           <CameraDirector
-            activeStage={activeStage}
             autoRotate={autoRotate}
             autoRotateSpeed={autoRotateSpeed}
-            autoFocus={autoFocus}
             centerY={centerY}
             controlsRef={controlsRef}
           />

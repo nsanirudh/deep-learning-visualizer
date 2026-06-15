@@ -1,0 +1,211 @@
+/* ────────────────────────────────────────────────────────────
+   Notes panel — large, clean, technical reader typography
+   ──────────────────────────────────────────────────────────── */
+
+.notes-prose {
+  font-size: 15.5px;
+  line-height: 1.8;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Headings ────────────────────────────────────────────── */
+
+.notes-prose h1 {
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  margin: 0 0 0.25rem 0;
+  color: var(--np-text-primary);
+}
+
+.notes-prose h2 {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--np-accent);
+  margin: 2.2rem 0 0.75rem 0;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--np-border);
+}
+
+.notes-prose h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 1.6rem 0 0.5rem 0;
+  color: var(--np-text-primary);
+}
+
+/* ── Body text ───────────────────────────────────────────── */
+
+.notes-prose p {
+  margin: 0.75rem 0;
+  color: var(--np-text-secondary);
+}
+
+.notes-prose strong {
+  font-weight: 700;
+  color: var(--np-text-primary);
+}
+
+.notes-prose em {
+  color: var(--np-text-dim);
+}
+
+/* ── Lists ───────────────────────────────────────────────── */
+
+.notes-prose ul,
+.notes-prose ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.notes-prose li {
+  margin: 0.35rem 0;
+  color: var(--np-text-secondary);
+  line-height: 1.75;
+}
+
+.notes-prose li strong {
+  color: var(--np-text-primary);
+}
+
+/* ── Inline code ─────────────────────────────────────────── */
+
+.notes-prose code {
+  font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+  font-size: 0.83em;
+  font-weight: 500;
+  background: var(--np-code-bg);
+  color: var(--np-accent);
+  padding: 0.15em 0.45em;
+  border-radius: 5px;
+  border: 1px solid var(--np-border);
+  white-space: nowrap;
+}
+
+/* ── Code blocks ─────────────────────────────────────────── */
+
+.notes-prose pre {
+  background: var(--np-code-bg);
+  border: 1px solid var(--np-border);
+  border-radius: 10px;
+  padding: 1.1rem 1.3rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.notes-prose pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--np-text-secondary);
+  white-space: pre;
+}
+
+/* ── Blockquote ──────────────────────────────────────────── */
+
+.notes-prose blockquote {
+  border-left: 3px solid var(--np-accent);
+  margin: 1.1rem 0;
+  padding: 0.65rem 1.1rem;
+  background: var(--np-code-bg);
+  border-radius: 0 8px 8px 0;
+}
+
+.notes-prose blockquote p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--np-text-dim);
+}
+
+/* ── Horizontal rule ─────────────────────────────────────── */
+
+.notes-prose hr {
+  border: none;
+  border-top: 1px solid var(--np-border);
+  margin: 1.8rem 0;
+}
+
+/* ── Tables ──────────────────────────────────────────────── */
+
+.notes-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+  border: 1px solid var(--np-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.notes-prose thead th {
+  text-align: left;
+  padding: 0.6rem 0.9rem;
+  font-weight: 700;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  background: var(--np-code-bg);
+  border-bottom: 1px solid var(--np-border);
+  color: var(--np-accent);
+}
+
+.notes-prose tbody td {
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--np-border);
+  color: var(--np-text-secondary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  vertical-align: middle;
+}
+
+.notes-prose tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.notes-prose tbody tr:nth-child(even) td {
+  background: var(--np-stripe);
+}
+
+/* ── Code spans inside table cells — lighter treatment ──── */
+
+.notes-prose td code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--np-accent);
+  letter-spacing: 0.01em;
+}
+
+/* ── KaTeX display math ──────────────────────────────────── */
+
+.notes-prose .katex-display {
+  margin: 1.3rem 0;
+  overflow-x: auto;
+  padding: 1rem 1.2rem;
+  background: var(--np-code-bg);
+  border-radius: 10px;
+  border: 1px solid var(--np-border);
+  text-align: center;
+}
+
+/* Make all KaTeX noticeably larger than body text */
+.notes-prose .katex {
+  font-size: 1.18em;
+}
+
+.notes-prose .katex-display > .katex {
+  font-size: 1.28em;
+}
+
+/* Inline math — slightly larger than text, no background */
+.notes-prose .katex-inline {
+  font-size: 1.05em;
+}

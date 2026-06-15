@@ -3,6 +3,7 @@ import { ModelType, ProcessingStage } from './types';
 import { MODELS } from './constants';
 import { Visualizer3D } from './components/Visualizer3D';
 import { MathPanel } from './components/MathPanel';
+import { NotesPanel } from './components/NotesPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const SunIcon = () => (
@@ -205,7 +206,7 @@ const App = () => {
   const [shadingStyle, setShadingStyle] = useState<'cyber' | 'clay' | 'wireframe'>('cyber');
   const [showParticles, setShowParticles] = useState<boolean>(true);
   const [autoRotate, setAutoRotate] = useState<boolean>(false);
-  const [autoFocus, setAutoFocus] = useState<boolean>(true);
+  const [showNotes, setShowNotes] = useState<boolean>(false);
 
   // --- Playback States ---
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -434,8 +435,9 @@ const App = () => {
         </div>
       </div>
 
-      {/* Primary 3D Canvas Area */}
-      <div className="flex-1 relative h-full">
+      {/* Primary area: 3D canvas + notes as proper flex columns */}
+      <div className="flex-1 flex h-full overflow-hidden">
+      <div className="flex-1 relative h-full min-w-0">
         
         {/* Playback Sequence Controller Overlay */}
         <div className="absolute top-6 left-6 z-10 flex flex-wrap items-center gap-2 max-w-[calc(100%-12px)]">
@@ -521,18 +523,28 @@ const App = () => {
                 <span className="text-[10px] font-bold uppercase tracking-wider" style={isDark ? { color: '#94a3b8' } : { color: '#64748b' }}>Flow Lines</span>
               </label>
 
-              {/* Auto focus toggle */}
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <input type="checkbox" checked={autoFocus} onChange={(e) => setAutoFocus(e.target.checked)} className="rounded border-gray-300 w-3 h-3 text-amber-500 rounded focus:ring-0" />
-                <span className="text-[10px] font-bold uppercase tracking-wider" style={isDark ? { color: '#94a3b8' } : { color: '#64748b' }}>Auto-Focus</span>
-              </label>
-
               {/* Passive rotation */}
               <label className="flex items-center gap-1.5 cursor-pointer select-none">
                 <input type="checkbox" checked={autoRotate} onChange={(e) => setAutoRotate(e.target.checked)} className="rounded border-gray-300 w-3 h-3 text-amber-500 rounded focus:ring-0" />
                 <span className="text-[10px] font-bold uppercase tracking-wider" style={isDark ? { color: '#94a3b8' } : { color: '#64748b' }}>Orbit</span>
               </label>
             </div>
+
+            {/* Notes toggle */}
+            <button
+              onClick={() => setShowNotes(!showNotes)}
+              className="px-2.5 py-1.5 text-[9px] font-extrabold rounded-lg border uppercase tracking-wider transition-all"
+              style={showNotes ? {
+                background: isDark ? '#6366f1' : '#4f46e5',
+                color: '#ffffff',
+                borderColor: isDark ? '#818cf8' : '#4f46e5',
+              } : {
+                background: isDark ? '#1a1d2e' : '#f1f5f9',
+                color: isDark ? '#818cf8' : '#4f46e5',
+                borderColor: isDark ? '#2a3252' : '#e2e8f0',
+              }}>
+              {showNotes ? '✕ Notes' : '≡ Notes'}
+            </button>
           </div>
 
         </div>
@@ -546,14 +558,24 @@ const App = () => {
           isDark={isDark}
           shadingStyle={shadingStyle}
           autoRotate={autoRotate}
-          autoFocus={autoFocus}
           batchSize={batchSize}
           seqLength={seqLength}
           showParticles={showParticles}
         />
         
-        {/* Right Math Details display overlay */}
-        <MathPanel stage={mathDisplayStage} isDark={isDark} batchSize={batchSize} seqLength={seqLength} />
+        {/* Math details overlay — hide when notes panel is open */}
+        {!showNotes && (
+          <MathPanel stage={mathDisplayStage} isDark={isDark} batchSize={batchSize} seqLength={seqLength} />
+        )}
+      </div>
+
+        {/* Architecture Notes — proper flex column, not an overlay */}
+        <NotesPanel
+          modelType={selectedModelType}
+          isDark={isDark}
+          isOpen={showNotes}
+          onClose={() => setShowNotes(false)}
+        />
       </div>
     </div>
   );
