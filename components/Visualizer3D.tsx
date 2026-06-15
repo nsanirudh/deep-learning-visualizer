@@ -60,7 +60,7 @@ const StageMaterial = ({
     return c;
   }, [color, isDark, shadingStyle]);
 
-  const activeColor = isDark ? '#f59e0b' : '#3B82F6';
+  const activeColor = isDark ? '#818cf8' : '#3B82F6';
   const hoveredColor = useMemo(() => new THREE.Color(baseColor).offsetHSL(0, 0.05, isDark ? 0.08 : -0.05), [baseColor, isDark]);
 
   const resolvedColor = active ? activeColor : hovered ? hoveredColor : baseColor;
@@ -178,15 +178,15 @@ const LayerBlock: React.FC<LayerBlockProps> = ({
   const isSummary = stage.category === 'summary';
 
   const labelColor = isDark
-    ? (isData ? '#6b6057' : '#9c9189')
+    ? (isData ? '#6a7ba2' : '#94a3b8')
     : (isData ? '#64748B' : '#4A5568');
-  const dimColor = isDark ? '#524840' : '#718096';
-  const connectorColor = isDark ? '#3a3530' : '#CBD5E0';
+  const dimColor = isDark ? '#3b4270' : '#718096';
+  const connectorColor = isDark ? '#1f2438' : '#CBD5E0';
   const edgeOpacity = isActive ? 0.85 : hovered ? 0.65 : (isDark ? 0.35 : 0.25);
   const edgeColor = isActive
-    ? (isDark ? '#d4a85a' : '#3B82F6')
+    ? (isDark ? '#818cf8' : '#3B82F6')
     : hovered
-    ? (isDark ? '#9c9189' : '#94A3B8')
+    ? (isDark ? '#94a3b8' : '#94A3B8')
     : (isData ? '#64748B' : '#718096');
 
   // Dynamic dimension text evaluation
@@ -236,11 +236,11 @@ const LayerBlock: React.FC<LayerBlockProps> = ({
               <group>
                 <mesh position={[0, 0.2, 0]} scale={[0.96, 1, 0.96]}>
                   <boxGeometry args={[stage.dimensions[0], 0.05, stage.dimensions[2]]} />
-                  <meshBasicMaterial color={isDark ? '#3a3530' : '#94A3B8'} wireframe />
+                  <meshBasicMaterial color={isDark ? '#1f2438' : '#94A3B8'} wireframe />
                 </mesh>
                 <mesh position={[0, -0.2, 0]} scale={[0.96, 1, 0.96]}>
                   <boxGeometry args={[stage.dimensions[0], 0.05, stage.dimensions[2]]} />
-                  <meshBasicMaterial color={isDark ? '#3a3530' : '#94A3B8'} wireframe />
+                  <meshBasicMaterial color={isDark ? '#1f2438' : '#94A3B8'} wireframe />
                 </mesh>
               </group>
             )}
@@ -275,8 +275,8 @@ const LayerGroupVisualizer: React.FC<{ stages: ProcessingStage[]; isDark: boolea
 
   const height = maxY - minY;
   const centerY = minY + height / 2;
-  const wireColor = isDark ? '#3a3530' : '#CBD5E0';
-  const textColor = isDark ? '#6b6057' : '#94A3B8';
+  const wireColor = isDark ? '#1f2438' : '#CBD5E0';
+  const textColor = isDark ? '#6a7ba2' : '#94A3B8';
 
   return (
     <group position={[0, centerY, 0]}>
@@ -365,7 +365,8 @@ const CameraDirector = ({
 interface VisualizerProps {
   model: ModelConfig;
   activeStageId: string | null;
-  onStageSelect: (stage: ProcessingStage | null) => void;
+  onStageSelect: (stage: ProcessingStage) => void;
+  onHoverStage?: (stage: ProcessingStage) => void;
   isDark: boolean;
   shadingStyle?: 'cyber' | 'clay' | 'wireframe';
   autoRotate?: boolean;
@@ -380,6 +381,7 @@ export const Visualizer3D: React.FC<VisualizerProps> = ({
   model,
   activeStageId,
   onStageSelect,
+  onHoverStage,
   isDark,
   shadingStyle = 'cyber',
   autoRotate = false,
@@ -402,16 +404,16 @@ export const Visualizer3D: React.FC<VisualizerProps> = ({
 
   if (!model) return null;
 
-  const bgColor = isDark ? '#151210' : '#F8FAFC';
-  const fogColor = isDark ? '#151210' : '#F8FAFC';
-  const hintBg = isDark ? 'rgba(37,34,32,0.78)' : 'rgba(255,255,255,0.7)';
-  const hintText = isDark ? '#9c9189' : '#64748B';
-  const pointLightColor = isDark ? '#d4a85a' : '#A7C7E7';
+  const bgColor = isDark ? '#0c0e16' : '#F8FAFC';
+  const fogColor = isDark ? '#0c0e16' : '#F8FAFC';
+  const hintBg = isDark ? 'rgba(17,20,31,0.88)' : 'rgba(255,255,255,0.7)';
+  const hintText = isDark ? '#94a3b8' : '#64748B';
+  const pointLightColor = isDark ? '#818cf8' : '#A7C7E7';
 
   return (
     <div className="w-full h-full relative" style={{ background: bgColor }}>
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 backdrop-blur px-4 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-semibold pointer-events-none shadow-sm flex items-center gap-2 border"
-        style={{ background: hintBg, color: hintText, borderColor: isDark ? '#332e2a' : '#E2E8F0' }}>
+        style={{ background: hintBg, color: hintText, borderColor: isDark ? '#2a3252' : '#E2E8F0' }}>
         <span>Drag to rotate</span>
         <span className="text-slate-300">•</span>
         <span>Scroll to zoom</span>
@@ -425,7 +427,7 @@ export const Visualizer3D: React.FC<VisualizerProps> = ({
           <ambientLight intensity={isDark ? 0.55 : 0.85} />
           <spotLight position={[20, 38, 20]} angle={0.28} penumbra={1} intensity={isDark ? 0.8 : 1.1} castShadow />
           <pointLight position={[-12, 12, -12]} intensity={isDark ? 0.95 : 0.6} color={pointLightColor} />
-          {isDark && <pointLight position={[12, -6, 12]} intensity={0.4} color="#e0a962" />}
+          {isDark && <pointLight position={[12, -6, 12]} intensity={0.4} color="#9ca3f4" />}
 
           <group position={[0, -centerY + 5, 0]}>
             <LayerGroupVisualizer stages={model.stages} isDark={isDark} />
@@ -435,8 +437,8 @@ export const Visualizer3D: React.FC<VisualizerProps> = ({
                 stage={stage}
                 isActive={activeStageId === stage.id}
                 onClick={() => onStageSelect(stage)}
-                onPointerOver={() => onStageSelect(stage)}
-                onPointerOut={() => onStageSelect(null)}
+                onPointerOver={() => onHoverStage?.(stage)}
+                onPointerOut={() => {}}
                 isDark={isDark}
                 shadingStyle={shadingStyle}
                 batchSize={batchSize}

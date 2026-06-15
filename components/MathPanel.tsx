@@ -35,14 +35,14 @@ const FormulaItem: React.FC<{ formula: MathFormula; isDark: boolean }> = ({ form
   }
 
   return (
-    <div className="mb-4 last:mb-0 p-3 rounded-lg" style={{ background: '#1c1916', border: '1px solid #332e2a' }}>
+    <div className="mb-4 last:mb-0 p-3 rounded-lg" style={{ background: '#11141f', border: '1px solid #2a3252' }}>
       <div className="flex justify-between items-baseline mb-1">
-        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#c9994e' }}>{formula.label}</span>
-        <span className="text-[10px] italic font-mono" style={{ color: '#6b6057' }}>{formula.description}</span>
+        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: '#6366f1' }}>{formula.label}</span>
+        <span className="text-[10px] italic font-mono" style={{ color: '#6a7ba2' }}>{formula.description}</span>
       </div>
       <div
         className="text-sm md:text-base p-2 rounded overflow-x-auto min-h-[3rem] flex items-center justify-center"
-        style={{ background: '#252220', border: '1px solid #3a3530', color: '#f0ebe4' }}
+        style={{ background: '#1a1d2e', border: '1px solid #2a3252', color: '#e2e8f0' }}
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </div>
@@ -368,16 +368,16 @@ export const MathPanel: React.FC<MathPanelProps> = ({ stage, isDark, batchSize =
           <motion.div key={stage.id} initial={{ opacity: 0, y: 15, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.97 }} transition={{ duration: 0.22 }}
             className="backdrop-blur-md rounded-xl shadow-xl overflow-hidden pointer-events-auto"
-            style={{ background: 'rgba(28,25,22,0.96)', border: '1px solid #332e2a' }}>
-            <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid #332e2a' }}>
+            style={{ background: 'rgba(17,20,31,0.96)', border: '1px solid #2a3252' }}>
+            <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid #2a3252' }}>
               <div>
-                <h3 className="font-semibold text-sm md:text-base" style={{ color: '#f0ebe4' }}>{stage.title}</h3>
-                <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#6b6057' }}>{stage.type}</p>
+                <h3 className="font-semibold text-sm md:text-base" style={{ color: '#e2e8f0' }}>{stage.title}</h3>
+                <p className="text-[10px] uppercase tracking-widest font-bold" style={{ color: '#6a7ba2' }}>{stage.type}</p>
               </div>
-              <div className="w-4.5 h-4.5 rounded-full shadow-inner border border-[#151210]" style={{ backgroundColor: stage.color }} />
+              <div className="w-4.5 h-4.5 rounded-full shadow-inner border border-[#0c0e16]" style={{ backgroundColor: stage.color }} />
             </div>
             <div className="p-4 max-h-[60vh] overflow-y-auto">
-              <p className="text-xs md:text-sm mb-4 leading-relaxed" style={{ color: '#9c9189' }}>{stage.description}</p>
+              <p className="text-xs md:text-sm mb-4 leading-relaxed" style={{ color: '#94a3b8' }}>{stage.description}</p>
               {stage.formulas.length > 0 && (
                 <div className="space-y-2 mb-4">
                   {stage.formulas.map((f, i) => <FormulaItem key={i} formula={f} isDark={true} />)}
@@ -386,19 +386,19 @@ export const MathPanel: React.FC<MathPanelProps> = ({ stage, isDark, batchSize =
 
               {/* Live evaluated dimension and matrix details */}
               {evalDetails && (
-                <div className="p-3.5 rounded-lg border shadow-inner" style={{ background: '#1c1916', borderColor: '#332e2a' }}>
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#6b6057' }}>Evaluated Shape (This Step)</h4>
+                <div className="p-3.5 rounded-lg border shadow-inner" style={{ background: '#11141f', borderColor: '#2a3252' }}>
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: '#6a7ba2' }}>Evaluated Shape (This Step)</h4>
                   <div className="flex gap-4 mb-2">
                     <div>
-                      <span className="block text-[10px] uppercase tracking-wider" style={{ color: '#6b6057' }}>Shape Matrix</span>
-                      <span className="text-xs md:text-sm font-bold font-mono" style={{ color: '#d4a85a' }}>{evalDetails.shape}</span>
+                      <span className="block text-[10px] uppercase tracking-wider" style={{ color: '#6a7ba2' }}>Shape Matrix</span>
+                      <span className="text-xs md:text-sm font-bold font-mono" style={{ color: '#818cf8' }}>{evalDetails.shape}</span>
                     </div>
-                    <div className="border-l pl-4" style={{ borderColor: '#332e2a' }}>
-                      <span className="block text-[10px] uppercase tracking-wider" style={{ color: '#6b6057' }}>Active Nodes</span>
-                      <span className="text-xs md:text-sm font-bold font-mono" style={{ color: '#f0ebe4' }}>{formattedElements(evalDetails.elements)}</span>
+                    <div className="border-l pl-4" style={{ borderColor: '#2a3252' }}>
+                      <span className="block text-[10px] uppercase tracking-wider" style={{ color: '#6a7ba2' }}>Active Nodes</span>
+                      <span className="text-xs md:text-sm font-bold font-mono" style={{ color: '#e2e8f0' }}>{formattedElements(evalDetails.elements)}</span>
                     </div>
                   </div>
-                  <p className="text-[11px] leading-relaxed font-sans" style={{ color: '#9c9189' }}>{evalDetails.detail}</p>
+                  <p className="text-[11px] leading-relaxed font-sans" style={{ color: '#94a3b8' }}>{evalDetails.detail}</p>
                 </div>
               )}
             </div>
@@ -406,7 +406,7 @@ export const MathPanel: React.FC<MathPanelProps> = ({ stage, isDark, batchSize =
         ) : (
           <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="backdrop-blur p-4 rounded-xl shadow text-xs text-center uppercase tracking-wider font-semibold pointer-events-auto border"
-            style={{ background: 'rgba(28,25,22,0.85)', borderColor: '#332e2a', color: '#6b6057' }}>
+            style={{ background: 'rgba(17,20,31,0.85)', borderColor: '#2a3252', color: '#6a7ba2' }}>
             Hover over blocks to activate dimension evaluations
           </motion.div>
         )}

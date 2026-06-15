@@ -36,10 +36,10 @@ const SidebarItem = ({
   sub?: string;
   isDark: boolean;
 }) => (
-  <div className={`flex flex-col py-2 border-b last:border-0 ${isDark ? 'border-[#332e2a]' : 'border-slate-100'}`}>
-    <span className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${isDark ? 'text-[#6b6057]' : 'text-slate-400'}`}>{label}</span>
-    <span className={`text-xs font-semibold font-mono ${isDark ? 'text-[#f0ebe4]' : 'text-slate-700'}`}>{value}</span>
-    {sub && <span className={`text-[9px] font-medium leading-relaxed mt-0.5 ${isDark ? 'text-[#6b6057]' : 'text-slate-400'}`}>{sub}</span>}
+  <div className={`flex flex-col py-2 border-b last:border-0 ${isDark ? 'border-[#2a3252]' : 'border-slate-100'}`}>
+    <span className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${isDark ? 'text-[#6a7ba2]' : 'text-slate-400'}`}>{label}</span>
+    <span className={`text-xs font-semibold font-mono ${isDark ? 'text-[#e2e8f0]' : 'text-slate-700'}`}>{value}</span>
+    {sub && <span className={`text-[9px] font-medium leading-relaxed mt-0.5 ${isDark ? 'text-[#6a7ba2]' : 'text-slate-400'}`}>{sub}</span>}
   </div>
 );
 
@@ -54,10 +54,10 @@ const InfoItem = ({
   detail?: string;
   isDark: boolean;
 }) => (
-  <div className={`flex flex-col py-2 border-b last:border-0 ${isDark ? 'border-[#332e2a]' : 'border-slate-100'}`}>
-    <span className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${isDark ? 'text-[#6b6057]' : 'text-slate-400'}`}>{label}</span>
-    <span className={`text-xs font-semibold font-mono ${isDark ? 'text-[#f0ebe4]' : 'text-slate-700'}`}>{value}</span>
-    {detail && <span className={`text-[9px] leading-relaxed mt-0.5 ${isDark ? 'text-[#6b6057]' : 'text-slate-450'}`}>{detail}</span>}
+  <div className={`flex flex-col py-2 border-b last:border-0 ${isDark ? 'border-[#2a3252]' : 'border-slate-100'}`}>
+    <span className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${isDark ? 'text-[#6a7ba2]' : 'text-slate-400'}`}>{label}</span>
+    <span className={`text-xs font-semibold font-mono ${isDark ? 'text-[#e2e8f0]' : 'text-slate-700'}`}>{value}</span>
+    {detail && <span className={`text-[9px] leading-relaxed mt-0.5 ${isDark ? 'text-[#6a7ba2]' : 'text-slate-400'}`}>{detail}</span>}
   </div>
 );
 
@@ -72,9 +72,9 @@ const SidebarSection = ({
 }) => (
   <div
     className={`rounded-xl p-4 mb-4 ${isDark ? '' : 'bg-slate-50 border border-slate-100'}`}
-    style={isDark ? { background: '#252220', border: '1px solid #332e2a' } : {}}
+    style={isDark ? { background: '#1a1d2e', border: '1px solid #2a3252' } : {}}
   >
-    <h3 className={`text-[10px] font-extrabold uppercase tracking-widest mb-3 ${isDark ? 'text-[#c9994e]' : 'text-slate-800'}`}>{title}</h3>
+    <h3 className={`text-[10px] font-extrabold uppercase tracking-widest mb-3 ${isDark ? 'text-[#6366f1]' : 'text-slate-800'}`}>{title}</h3>
     {children}
   </div>
 );
@@ -191,6 +191,7 @@ const computeDynamicVram = (
 const App = () => {
   const [selectedModelType, setSelectedModelType] = useState<ModelType>(ModelType.TRANSFORMER_7B);
   const [activeStage, setActiveStage] = useState<ProcessingStage | null>(null);
+  const [mathDisplayStage, setMathDisplayStage] = useState<ProcessingStage | null>(null);
   const [isDark, setIsDark] = useState(true);
 
   // --- Sequence & Hardware States ---
@@ -220,11 +221,14 @@ const App = () => {
       if (activePlaybackIndex === -1) {
         setActivePlaybackIndex(0);
         setActiveStage(currentModel.stages[0]);
+        setMathDisplayStage(currentModel.stages[0]);
       }
       interval = setInterval(() => {
         setActivePlaybackIndex((prev) => {
           const next = prev + 1 >= currentModel.stages.length ? 0 : prev + 1;
-          setActiveStage(currentModel.stages[next]);
+          const nextStage = currentModel.stages[next];
+          setActiveStage(nextStage);
+          setMathDisplayStage(nextStage);
           return next;
         });
       }, playbackSpeed);
@@ -241,16 +245,18 @@ const App = () => {
     setIsPlaying(false);
     setActivePlaybackIndex(-1);
     setActiveStage(null);
+    setMathDisplayStage(null);
   }, [selectedModelType]);
 
-  const handleStageSelect = (stage: ProcessingStage | null) => {
+  const handleStageClick = (stage: ProcessingStage) => {
     setActiveStage(stage);
-    if (stage) {
-      const idx = currentModel.stages.findIndex(s => s.id === stage.id);
-      if (idx !== -1) {
-        setActivePlaybackIndex(idx);
-      }
-    }
+    setMathDisplayStage(stage);
+    const idx = currentModel.stages.findIndex(s => s.id === stage.id);
+    if (idx !== -1) setActivePlaybackIndex(idx);
+  };
+
+  const handleStageHover = (stage: ProcessingStage) => {
+    setMathDisplayStage(stage);
   };
 
   const dynamicStats = useMemo(() => {
@@ -258,31 +264,31 @@ const App = () => {
   }, [selectedModelType, batchSize, seqLength, quantization, runningMode, optimizer]);
 
   return (
-    <div className={`flex h-screen w-screen overflow-hidden ${isDark ? 'text-[#f0ebe4]' : 'bg-slate-50 text-slate-800'}`} style={isDark ? { background: '#151210' } : {}}>
+    <div className={`flex h-screen w-screen overflow-hidden ${isDark ? 'text-[#e2e8f0]' : 'bg-slate-50 text-slate-800'}`} style={isDark ? { background: '#0c0e16' } : {}}>
       
       {/* Dynamic Sidebar */}
       <div className="w-80 md:w-96 flex-shrink-0 flex flex-col z-20 shadow-xl border-r" 
-        style={isDark ? { background: '#1c1916', borderColor: '#332e2a' } : { background: '#white', borderColor: '#e2e8f0' }}>
+        style={isDark ? { background: '#11141f', borderColor: '#2a3252' } : { background: 'white', borderColor: '#e2e8f0' }}>
         
         {/* Header Block */}
-        <div className="p-5 flex items-start justify-between" style={isDark ? { borderBottom: '1px solid #332e2a' } : { borderBottom: '1px solid #f1f5f9' }}>
+        <div className="p-5 flex items-start justify-between" style={isDark ? { borderBottom: '1px solid #2a3252' } : { borderBottom: '1px solid #f1f5f9' }}>
           <div>
             <h1 className="text-lg font-bold bg-clip-text text-transparent" 
-              style={isDark ? { backgroundImage: 'linear-gradient(to right, #d4a85a, #f0d89a)' } : { backgroundImage: 'linear-gradient(to right, #334155, #475569)' }}>
+              style={isDark ? { backgroundImage: 'linear-gradient(to right, #818cf8, #a5b4fc)' } : { backgroundImage: 'linear-gradient(to right, #334155, #475569)' }}>
               LayerGraph 3D
             </h1>
-            <p className="text-[10px] uppercase font-bold tracking-widest mt-0.5" style={isDark ? { color: '#6b6057' } : { color: '#94a3b8' }}>Neural Hardware Estimator</p>
+            <p className="text-[10px] uppercase font-bold tracking-widest mt-0.5" style={isDark ? { color: '#6a7ba2' } : { color: '#94a3b8' }}>Neural Hardware Estimator</p>
           </div>
           <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-lg border transition-all" 
-            style={isDark ? { background: '#252220', color: '#9c9189', borderColor: '#332e2a' } : { background: '#f1f5f9', color: '#475569', borderColor: '#e2e8f0' }} 
+            style={isDark ? { background: '#1a1d2e', color: '#94a3b8', borderColor: '#2a3252' } : { background: '#f1f5f9', color: '#475569', borderColor: '#e2e8f0' }} 
             title={isDark ? "Light theme" : "Dark theme"}>
             {isDark ? <SunIcon /> : <MoonIcon />}
           </button>
         </div>
 
         {/* Model Tabs Selection */}
-        <div className="p-4 bg-opacity-40" style={isDark ? { background: '#151210' } : { background: '#f8fafc' }}>
-          <div className="flex p-1 rounded-lg gap-1 border" style={isDark ? { background: '#252220', borderColor: '#332e2a' } : { background: '#f1f5f9', borderColor: '#e2e8f0' }}>
+        <div className="p-4 bg-opacity-40" style={isDark ? { background: '#0c0e16' } : { background: '#f8fafc' }}>
+          <div className="flex p-1 rounded-lg gap-1 border" style={isDark ? { background: '#1a1d2e', borderColor: '#2a3252' } : { background: '#f1f5f9', borderColor: '#e2e8f0' }}>
             {([
               [ModelType.TRANSFORMER_7B, 'Llama-7B'],
               [ModelType.PERSONA_PLEX, 'PersonaPlex'],
@@ -290,8 +296,8 @@ const App = () => {
             ] as [ModelType, string][]).map(([type, label]) => (
               <button key={type} onClick={() => setSelectedModelType(type)} className="flex-1 py-1.5 text-[10px] md:text-xs font-semibold rounded transition-all"
                 style={isDark ? {
-                  background: selectedModelType === type ? '#3a3530' : 'transparent',
-                  color: selectedModelType === type ? '#f0ebe4' : '#6b6057',
+                  background: selectedModelType === type ? '#1f2438' : 'transparent',
+                  color: selectedModelType === type ? '#e2e8f0' : '#6a7ba2',
                   boxShadow: selectedModelType === type ? '0 1px 3px rgba(0,0,0,0.3)' : 'none'
                 } : {
                   background: selectedModelType === type ? '#ffffff' : 'transparent',
@@ -310,30 +316,30 @@ const App = () => {
           {/* Active Model Title */}
           <div>
             <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded tracking-wide border" 
-              style={isDark ? { color: '#c9994e', borderColor: '#3a3530', background: '#252220' } : { color: '#3b82f6', borderColor: '#e2e8f0', background: '#f8fafc' }}>
+              style={isDark ? { color: '#6366f1', borderColor: '#1f2438', background: '#1a1d2e' } : { color: '#3b82f6', borderColor: '#e2e8f0', background: '#f8fafc' }}>
               {currentModel.id === ModelType.TRANSFORMER_7B ? 'LLM DECODER' : currentModel.id === ModelType.PERSONA_PLEX ? 'SPEECH-TO-SPEECH' : 'SPEECH LEARNER'}
             </span>
-            <h2 className="text-base font-semibold mt-2" style={isDark ? { color: '#f0ebe4' } : { color: '#1e293b' }}>{currentModel.name}</h2>
-            <p className="text-xs leading-relaxed mt-1" style={isDark ? { color: '#9c9189' } : { color: '#64748b' }}>{currentModel.description}</p>
+            <h2 className="text-base font-semibold mt-2" style={isDark ? { color: '#e2e8f0' } : { color: '#1e293b' }}>{currentModel.name}</h2>
+            <p className="text-xs leading-relaxed mt-1" style={isDark ? { color: '#94a3b8' } : { color: '#64748b' }}>{currentModel.description}</p>
           </div>
 
           {/* Sequence & Hardware Optimizer sliders dashboard */}
           <SidebarSection title="Simulator Configurations" isDark={isDark}>
             {/* Running Mode Selector */}
             <div className="mb-3">
-              <label className="text-[9px] uppercase tracking-wider font-extrabold block mb-1.5" style={isDark ? { color: '#6b6057' } : { color: '#94a3b8' }}>Engine Mode</label>
-              <div className="flex rounded border p-0.5 gap-0.5" style={isDark ? { background: '#1c1916', borderColor: '#332e2a' } : { background: '#white', borderColor: '#e2e8f0' }}>
+              <label className="text-[9px] uppercase tracking-wider font-extrabold block mb-1.5" style={isDark ? { color: '#6a7ba2' } : { color: '#94a3b8' }}>Engine Mode</label>
+              <div className="flex rounded border p-0.5 gap-0.5" style={isDark ? { background: '#11141f', borderColor: '#2a3252' } : { background: 'white', borderColor: '#e2e8f0' }}>
                 <button onClick={() => setRunningMode('inference')} className="flex-1 py-1 text-[10px] font-bold rounded"
                   style={{
-                    background: runningMode === 'inference' ? (isDark ? '#3a3530' : '#475569') : 'transparent',
-                    color: runningMode === 'inference' ? '#f0ebe4' : (isDark ? '#524840' : '#94a3b8')
+                    background: runningMode === 'inference' ? (isDark ? '#1f2438' : '#475569') : 'transparent',
+                    color: runningMode === 'inference' ? '#e2e8f0' : (isDark ? '#3b4270' : '#94a3b8')
                   }}>
                   Inference Mode
                 </button>
                 <button onClick={() => setRunningMode('training')} className="flex-1 py-1 text-[10px] font-bold rounded"
                   style={{
-                    background: runningMode === 'training' ? (isDark ? '#3a3530' : '#475569') : 'transparent',
-                    color: runningMode === 'training' ? '#f0ebe4' : (isDark ? '#524840' : '#94a3b8')
+                    background: runningMode === 'training' ? (isDark ? '#1f2438' : '#475569') : 'transparent',
+                    color: runningMode === 'training' ? '#e2e8f0' : (isDark ? '#3b4270' : '#94a3b8')
                   }}>
                   Training Mode
                 </button>
@@ -343,32 +349,32 @@ const App = () => {
             {/* Slider: Batch Size */}
             <div className="mb-3">
               <div className="flex justify-between items-center text-[10px] block mb-1">
-                <span className="uppercase tracking-wider font-bold" style={isDark ? { color: '#6b6057' } : { color: '#94a3b8' }}>Batch Size (B)</span>
-                <span className="font-mono font-bold" style={isDark ? { color: '#d4a85a' } : { color: '#2563eb' }}>{batchSize}</span>
+                <span className="uppercase tracking-wider font-bold" style={isDark ? { color: '#6a7ba2' } : { color: '#94a3b8' }}>Batch Size (B)</span>
+                <span className="font-mono font-bold" style={isDark ? { color: '#818cf8' } : { color: '#2563eb' }}>{batchSize}</span>
               </div>
               <input type="range" min="1" max="32" step={batchSize > 8 ? 4 : 1} value={batchSize} onChange={(e) => setBatchSize(parseInt(e.target.value))}
-                className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" style={isDark ? { background: '#332e2a' } : {}} />
+                className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" style={isDark ? { background: '#2a3252' } : {}} />
             </div>
 
             {/* Slider: Sequence Length */}
             <div className="mb-3">
               <div className="flex justify-between items-center text-[10px] block mb-1">
-                <span className="uppercase tracking-wider font-bold" style={isDark ? { color: '#6b6057' } : { color: '#94a3b8' }}>Seq. Length (S)</span>
-                <span className="font-mono font-bold" style={isDark ? { color: '#d4a85a' } : { color: '#2563eb' }}>{seqLength} tokens</span>
+                <span className="uppercase tracking-wider font-bold" style={isDark ? { color: '#6a7ba2' } : { color: '#94a3b8' }}>Seq. Length (S)</span>
+                <span className="font-mono font-bold" style={isDark ? { color: '#818cf8' } : { color: '#2563eb' }}>{seqLength} tokens</span>
               </div>
               <input type="range" min="256" max="8192" step="256" value={seqLength} onChange={(e) => setSeqLength(parseInt(e.target.value))}
-                className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" style={isDark ? { background: '#332e2a' } : {}} />
+                className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer" style={isDark ? { background: '#2a3252' } : {}} />
             </div>
 
             {/* Weight precision format picker */}
             <div className="mb-3">
-              <label className="text-[9px] uppercase tracking-wider font-extrabold block mb-1" style={isDark ? { color: '#6b6057' } : { color: '#94a3b8' }}>Quantization Precision</label>
-              <div className="grid grid-cols-4 gap-1 p-0.5 rounded border" style={isDark ? { background: '#1c1916', borderColor: '#332e2a' } : { background: '#ffffff', borderColor: '#e2e8f0' }}>
+              <label className="text-[9px] uppercase tracking-wider font-extrabold block mb-1" style={isDark ? { color: '#6a7ba2' } : { color: '#94a3b8' }}>Quantization Precision</label>
+              <div className="grid grid-cols-4 gap-1 p-0.5 rounded border" style={isDark ? { background: '#11141f', borderColor: '#2a3252' } : { background: '#ffffff', borderColor: '#e2e8f0' }}>
                 {(['FP32', 'FP16', 'INT8', 'INT4'] as const).map((q) => (
                   <button key={q} onClick={() => setQuantization(q)} className="py-1 text-[9px] font-extrabold rounded"
                     style={{
-                      background: quantization === q ? (isDark ? '#3a3530' : '#475569') : 'transparent',
-                      color: quantization === q ? '#f0ebe4' : (isDark ? '#6b6057' : '#94a3b8')
+                      background: quantization === q ? (isDark ? '#1f2438' : '#475569') : 'transparent',
+                      color: quantization === q ? '#e2e8f0' : (isDark ? '#6a7ba2' : '#94a3b8')
                     }}>
                     {q}
                   </button>
@@ -379,13 +385,13 @@ const App = () => {
             {/* Optimizer selector (only visible during training) */}
             {runningMode === 'training' && (
               <div className="mt-2.5">
-                <label className="text-[9px] uppercase tracking-wider font-extrabold block mb-1" style={isDark ? { color: '#6b6057' } : { color: '#94a3b8' }}>Weights Optimizer</label>
-                <div className="flex rounded border p-0.5 gap-0.5" style={isDark ? { background: '#1c1916', borderColor: '#332e2a' } : { background: '#ffffff', borderColor: '#e2e8f0' }}>
+                <label className="text-[9px] uppercase tracking-wider font-extrabold block mb-1" style={isDark ? { color: '#6a7ba2' } : { color: '#94a3b8' }}>Weights Optimizer</label>
+                <div className="flex rounded border p-0.5 gap-0.5" style={isDark ? { background: '#11141f', borderColor: '#2a3252' } : { background: '#ffffff', borderColor: '#e2e8f0' }}>
                   {(['AdamW', 'SGD'] as const).map((opt) => (
                     <button key={opt} onClick={() => setOptimizer(opt)} className="flex-1 py-1 text-[9px] font-bold rounded"
                       style={{
-                        background: optimizer === opt ? (isDark ? '#3a3530' : '#475569') : 'transparent',
-                        color: optimizer === opt ? '#f0ebe4' : (isDark ? '#6b6057' : '#94a3b8')
+                        background: optimizer === opt ? (isDark ? '#1f2438' : '#475569') : 'transparent',
+                        color: optimizer === opt ? '#e2e8f0' : (isDark ? '#6a7ba2' : '#94a3b8')
                       }}>
                       {opt === 'AdamW' ? 'AdamW (8 bytes/param FP32)' : 'SGD Momentum (4 bytes)'}
                     </button>
@@ -413,8 +419,8 @@ const App = () => {
           <SidebarSection title="Architectural Blueprint Notes" isDark={isDark}>
             <ul className="space-y-2.5">
               {currentModel.architectureNotes.map((note, i) => (
-                <li key={i} className="flex gap-2 text-[11px] leading-relaxed" style={isDark ? { color: '#9c9189' } : { color: '#64748b' }}>
-                  <span style={isDark ? { color: '#c9994e', flexShrink: 0 } : { color: '#3b82f6', flexShrink: 0 }}>—</span>
+                <li key={i} className="flex gap-2 text-[11px] leading-relaxed" style={isDark ? { color: '#94a3b8' } : { color: '#64748b' }}>
+                  <span style={isDark ? { color: '#6366f1', flexShrink: 0 } : { color: '#3b82f6', flexShrink: 0 }}>—</span>
                   <span>{note}</span>
                 </li>
               ))}
@@ -423,7 +429,7 @@ const App = () => {
 
         </div>
 
-        <div className="p-4 text-[9px] tracking-wider text-center uppercase font-semibold block" style={isDark ? { borderTop: '1px solid #332e2a', color: '#6b6057' } : { borderTop: '1px solid #f1f5f9', color: '#94a3b8' }}>
+        <div className="p-4 text-[9px] tracking-wider text-center uppercase font-semibold block" style={isDark ? { borderTop: '1px solid #2a3252', color: '#6a7ba2' } : { borderTop: '1px solid #f1f5f9', color: '#94a3b8' }}>
           Real-time WebGL Engine • Three.js LayerGraph
         </div>
       </div>
@@ -436,25 +442,27 @@ const App = () => {
           
           {/* Main Action Controllers */}
           <div className="backdrop-blur-md rounded-xl p-2.5 border flex items-center gap-3.5 shadow-lg" 
-            style={isDark ? { background: 'rgba(28,25,22,0.85)', borderColor: '#332e2a' } : { background: 'rgba(255,255,255,0.9)', borderColor: '#e2e8f0' }}>
+            style={isDark ? { background: 'rgba(17,20,31,0.88)', borderColor: '#2a3252' } : { background: 'rgba(255,255,255,0.9)', borderColor: '#e2e8f0' }}>
             <div className="flex items-center gap-1.5">
               {/* Prev */}
               <button onClick={() => {
                 setIsPlaying(false);
                 const nextIdx = activePlaybackIndex - 1 < 0 ? currentModel.stages.length - 1 : activePlaybackIndex - 1;
+                const nextStage = currentModel.stages[nextIdx];
                 setActivePlaybackIndex(nextIdx);
-                setActiveStage(currentModel.stages[nextIdx]);
+                setActiveStage(nextStage);
+                setMathDisplayStage(nextStage);
               }} className="p-1.5 rounded-lg border hover:-translate-y-0.5 transition-all text-sm"
-                style={isDark ? { background: '#252220', borderColor: '#332e2a' } : { background: '#f8fafc', borderColor: '#e2e8f0' }} title="Previous step">
+                style={isDark ? { background: '#1a1d2e', borderColor: '#2a3252' } : { background: '#f8fafc', borderColor: '#e2e8f0' }} title="Previous step">
                 ◀
               </button>
 
               {/* Play / Pause button */}
               <button onClick={() => setIsPlaying(!isPlaying)} className="px-3 py-1.5 font-extrabold rounded-lg border text-[11px] tracking-wider uppercase transition-all"
                 style={isDark ? {
-                  background: isPlaying ? '#d4a85a' : '#252220',
-                  color: isPlaying ? '#151210' : '#f0ebe4',
-                  borderColor: '#332e2a'
+                  background: isPlaying ? '#818cf8' : '#1a1d2e',
+                  color: isPlaying ? '#0c0e16' : '#e2e8f0',
+                  borderColor: '#2a3252'
                 } : {
                   background: isPlaying ? '#475569' : '#0f172a',
                   color: '#ffffff',
@@ -467,10 +475,12 @@ const App = () => {
               <button onClick={() => {
                 setIsPlaying(false);
                 const nextIdx = activePlaybackIndex + 1 >= currentModel.stages.length ? 0 : activePlaybackIndex + 1;
+                const nextStage = currentModel.stages[nextIdx];
                 setActivePlaybackIndex(nextIdx);
-                setActiveStage(currentModel.stages[nextIdx]);
+                setActiveStage(nextStage);
+                setMathDisplayStage(nextStage);
               }} className="p-1.5 rounded-lg border hover:-translate-y-0.5 transition-all text-sm"
-                style={isDark ? { background: '#252220', borderColor: '#332e2a' } : { background: '#f8fafc', borderColor: '#e2e8f0' }} title="Next step">
+                style={isDark ? { background: '#1a1d2e', borderColor: '#2a3252' } : { background: '#f8fafc', borderColor: '#e2e8f0' }} title="Next step">
                 ▶
               </button>
             </div>
@@ -478,8 +488,8 @@ const App = () => {
             {/* Steps indicator */}
             <div className="text-[10px] uppercase tracking-wider font-extrabold flex items-center gap-1">
               <span>Step</span>
-              <span className="font-mono font-bold text-xs" style={isDark ? { color: '#d4a85a' } : { color: '#1e293b' }}>
-                {activePlaybackIndex + 1}
+              <span className="font-mono font-bold text-xs" style={isDark ? { color: '#818cf8' } : { color: '#1e293b' }}>
+                {activePlaybackIndex === -1 ? '—' : activePlaybackIndex + 1}
               </span>
               <span className="text-slate-400">/</span>
               <span>{currentModel.stages.length}</span>
@@ -488,15 +498,15 @@ const App = () => {
 
           {/* Quick Display Customizer Settings */}
           <div className="backdrop-blur-md rounded-xl p-2.5 border flex items-center gap-2.5 shadow-lg" 
-            style={isDark ? { background: 'rgba(28,25,22,0.85)', borderColor: '#332e2a' } : { background: 'rgba(255,255,255,0.9)', borderColor: '#e2e8f0' }}>
+            style={isDark ? { background: 'rgba(17,20,31,0.88)', borderColor: '#2a3252' } : { background: 'rgba(255,255,255,0.9)', borderColor: '#e2e8f0' }}>
             
             {/* Shading styles toggle */}
-            <div className="flex gap-0.5 p-0.5 border rounded-lg" style={isDark ? { background: '#151210', borderColor: '#332e2a' } : { background: '#f1f5f9', borderColor: '#e2e8f0' }}>
+            <div className="flex gap-0.5 p-0.5 border rounded-lg" style={isDark ? { background: '#0c0e16', borderColor: '#2a3252' } : { background: '#f1f5f9', borderColor: '#e2e8f0' }}>
               {(['cyber', 'clay', 'wireframe'] as const).map((style) => (
                 <button key={style} onClick={() => setShadingStyle(style)} className="px-2 py-1 text-[9px] font-bold rounded capitalize"
                   style={{
-                    background: shadingStyle === style ? (isDark ? '#3a3530' : '#475569') : 'transparent',
-                    color: shadingStyle === style ? '#f0ebe4' : (isDark ? '#6b6057' : '#94a3b8')
+                    background: shadingStyle === style ? (isDark ? '#1f2438' : '#475569') : 'transparent',
+                    color: shadingStyle === style ? '#e2e8f0' : (isDark ? '#6a7ba2' : '#94a3b8')
                   }}>
                   {style}
                 </button>
@@ -508,19 +518,19 @@ const App = () => {
               {/* Flow particles */}
               <label className="flex items-center gap-1.5 cursor-pointer select-none">
                 <input type="checkbox" checked={showParticles} onChange={(e) => setShowParticles(e.target.checked)} className="rounded border-gray-300 w-3 h-3 text-amber-500 rounded focus:ring-0" />
-                <span className="text-[10px] font-bold uppercase tracking-wider" style={isDark ? { color: '#9c9189' } : { color: '#64748b' }}>Flow Lines</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={isDark ? { color: '#94a3b8' } : { color: '#64748b' }}>Flow Lines</span>
               </label>
 
               {/* Auto focus toggle */}
               <label className="flex items-center gap-1.5 cursor-pointer select-none">
                 <input type="checkbox" checked={autoFocus} onChange={(e) => setAutoFocus(e.target.checked)} className="rounded border-gray-300 w-3 h-3 text-amber-500 rounded focus:ring-0" />
-                <span className="text-[10px] font-bold uppercase tracking-wider" style={isDark ? { color: '#9c9189' } : { color: '#64748b' }}>Auto-Focus</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={isDark ? { color: '#94a3b8' } : { color: '#64748b' }}>Auto-Focus</span>
               </label>
 
               {/* Passive rotation */}
               <label className="flex items-center gap-1.5 cursor-pointer select-none">
                 <input type="checkbox" checked={autoRotate} onChange={(e) => setAutoRotate(e.target.checked)} className="rounded border-gray-300 w-3 h-3 text-amber-500 rounded focus:ring-0" />
-                <span className="text-[10px] font-bold uppercase tracking-wider" style={isDark ? { color: '#9c9189' } : { color: '#64748b' }}>Orbit</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider" style={isDark ? { color: '#94a3b8' } : { color: '#64748b' }}>Orbit</span>
               </label>
             </div>
           </div>
@@ -531,7 +541,8 @@ const App = () => {
         <Visualizer3D
           model={currentModel}
           activeStageId={activeStage?.id || null}
-          onStageSelect={handleStageSelect}
+          onStageSelect={handleStageClick}
+          onHoverStage={handleStageHover}
           isDark={isDark}
           shadingStyle={shadingStyle}
           autoRotate={autoRotate}
@@ -542,7 +553,7 @@ const App = () => {
         />
         
         {/* Right Math Details display overlay */}
-        <MathPanel stage={activeStage} isDark={isDark} batchSize={batchSize} seqLength={seqLength} />
+        <MathPanel stage={mathDisplayStage} isDark={isDark} batchSize={batchSize} seqLength={seqLength} />
       </div>
     </div>
   );
