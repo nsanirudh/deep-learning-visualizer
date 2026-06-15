@@ -6,6 +6,13 @@ import { MathPanel } from './components/MathPanel';
 import { NotesPanel } from './components/NotesPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const NotesIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+  </svg>
+);
+
 const SunIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
     <circle cx="12" cy="12" r="5" />
@@ -206,7 +213,7 @@ const App = () => {
   const [shadingStyle, setShadingStyle] = useState<'cyber' | 'clay' | 'wireframe'>('cyber');
   const [showParticles, setShowParticles] = useState<boolean>(true);
   const [autoRotate, setAutoRotate] = useState<boolean>(false);
-  const [showNotes, setShowNotes] = useState<boolean>(false);
+  const [showNotes, setShowNotes] = useState<boolean>(true);
 
   // --- Playback States ---
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -530,21 +537,6 @@ const App = () => {
               </label>
             </div>
 
-            {/* Notes toggle */}
-            <button
-              onClick={() => setShowNotes(!showNotes)}
-              className="px-2.5 py-1.5 text-[9px] font-extrabold rounded-lg border uppercase tracking-wider transition-all"
-              style={showNotes ? {
-                background: isDark ? '#6366f1' : '#4f46e5',
-                color: '#ffffff',
-                borderColor: isDark ? '#818cf8' : '#4f46e5',
-              } : {
-                background: isDark ? '#1a1d2e' : '#f1f5f9',
-                color: isDark ? '#818cf8' : '#4f46e5',
-                borderColor: isDark ? '#2a3252' : '#e2e8f0',
-              }}>
-              {showNotes ? '✕ Notes' : '≡ Notes'}
-            </button>
           </div>
 
         </div>
@@ -563,6 +555,28 @@ const App = () => {
           showParticles={showParticles}
         />
         
+        {/* Notes toggle — floating icon button, top-right of canvas */}
+        <button
+          onClick={() => setShowNotes(!showNotes)}
+          title={showNotes ? 'Close notes' : 'Open architecture notes'}
+          className="absolute top-5 right-5 z-20 flex items-center justify-center rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95"
+          style={{
+            width: 44,
+            height: 44,
+            background: showNotes
+              ? (isDark ? '#6366f1' : '#4f46e5')
+              : (isDark ? '#1a1d2e' : '#ffffff'),
+            color: showNotes
+              ? '#ffffff'
+              : (isDark ? '#818cf8' : '#4f46e5'),
+            border: `1.5px solid ${showNotes
+              ? (isDark ? '#818cf8' : '#4338ca')
+              : (isDark ? '#2a3252' : '#e2e8f0')}`,
+          }}
+        >
+          <NotesIcon />
+        </button>
+
         {/* Math details overlay — hide when notes panel is open */}
         {!showNotes && (
           <MathPanel stage={mathDisplayStage} isDark={isDark} batchSize={batchSize} seqLength={seqLength} />
