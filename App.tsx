@@ -13,6 +13,14 @@ const NotesIcon = () => (
   </svg>
 );
 
+const MenuIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="3" y1="6"  x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
+
 const SunIcon = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
     <circle cx="12" cy="12" r="5" />
@@ -201,6 +209,8 @@ const App = () => {
   const [activeStage, setActiveStage] = useState<ProcessingStage | null>(null);
   const [mathDisplayStage, setMathDisplayStage] = useState<ProcessingStage | null>(null);
   const [isDark, setIsDark] = useState(true);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   // --- Sequence & Hardware States ---
   const [runningMode, setRunningMode] = useState<'inference' | 'training'>('inference');
@@ -256,6 +266,13 @@ const App = () => {
     setMathDisplayStage(null);
   }, [selectedModelType]);
 
+  // Track viewport width for responsive layout
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
   const handleStageClick = (stage: ProcessingStage) => {
     setActiveStage(stage);
     setMathDisplayStage(stage);
@@ -263,7 +280,7 @@ const App = () => {
     if (idx !== -1) setActivePlaybackIndex(idx);
   };
 
-  const handleStageHover = (stage: ProcessingStage) => {
+  const handleStageHover = (stage: ProcessingStage | null) => {
     setMathDisplayStage(stage);
   };
 
@@ -273,10 +290,35 @@ const App = () => {
 
   return (
     <div className={`flex h-screen w-screen overflow-hidden ${isDark ? 'text-[#e2e8f0]' : 'bg-slate-50 text-slate-800'}`} style={isDark ? { background: '#0c0e16' } : {}}>
-      
+
+      {/* Mobile backdrop — tap to close sidebar */}
+      {isMobile && showSidebar && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60"
+          style={{ backdropFilter: 'blur(2px)' }}
+          onClick={() => setShowSidebar(false)}
+        />
+      )}
+
       {/* Dynamic Sidebar */}
-      <div className="w-80 md:w-96 flex-shrink-0 flex flex-col z-20 shadow-xl border-r" 
-        style={isDark ? { background: '#11141f', borderColor: '#2a3252' } : { background: 'white', borderColor: '#e2e8f0' }}>
+      <div
+        className="flex-shrink-0 flex flex-col shadow-xl border-r"
+        style={{
+          width: isMobile ? '85vw' : undefined,
+          maxWidth: isMobile ? 360 : 384,
+          minWidth: isMobile ? undefined : 320,
+          zIndex: isMobile ? 50 : 20,
+          ...(isMobile ? {
+            position: 'fixed' as const,
+            top: 0,
+            left: 0,
+            height: '100%',
+            transform: showSidebar ? 'translateX(0)' : 'translateX(-100%)',
+            transition: 'transform 0.28s cubic-bezier(0.4,0,0.2,1)',
+          } : {}),
+          background: isDark ? '#11141f' : 'white',
+          borderColor: isDark ? '#2a3252' : '#e2e8f0',
+        }}>
         
         {/* Header Block */}
         <div className="p-5 flex items-start justify-between" style={isDark ? { borderBottom: '1px solid #2a3252' } : { borderBottom: '1px solid #f1f5f9' }}>
@@ -447,8 +489,19 @@ const App = () => {
       <div className="flex-1 relative h-full min-w-0">
         
         {/* Playback Sequence Controller Overlay */}
-        <div className="absolute top-6 left-6 z-10 flex flex-wrap items-center gap-2 max-w-[calc(100%-12px)]">
-          
+        <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2 max-w-[calc(100%-60px)]">
+
+          {/* Hamburger — mobile only */}
+          {isMobile && (
+            <button
+              onClick={() => setShowSidebar(true)}
+              className="p-2.5 rounded-xl border shadow-lg flex items-center justify-center"
+              style={isDark ? { background: 'rgba(17,20,31,0.9)', borderColor: '#2a3252', color: '#94a3b8' } : { background: 'rgba(255,255,255,0.95)', borderColor: '#e2e8f0', color: '#475569' }}
+            >
+              <MenuIcon />
+            </button>
+          )}
+
           {/* Main Action Controllers */}
           <div className="backdrop-blur-md rounded-xl p-2.5 border flex items-center gap-3.5 shadow-lg" 
             style={isDark ? { background: 'rgba(17,20,31,0.88)', borderColor: '#2a3252' } : { background: 'rgba(255,255,255,0.9)', borderColor: '#e2e8f0' }}>
@@ -559,10 +612,10 @@ const App = () => {
         <button
           onClick={() => setShowNotes(!showNotes)}
           title={showNotes ? 'Close notes' : 'Open architecture notes'}
-          className="absolute top-5 right-5 z-20 flex items-center justify-center rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95"
+          className="absolute top-4 right-4 z-20 flex items-center justify-center rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95"
           style={{
-            width: 44,
-            height: 44,
+            width: isMobile ? 48 : 44,
+            height: isMobile ? 48 : 44,
             background: showNotes
               ? (isDark ? '#6366f1' : '#4f46e5')
               : (isDark ? '#1a1d2e' : '#ffffff'),
@@ -588,6 +641,7 @@ const App = () => {
           modelType={selectedModelType}
           isDark={isDark}
           isOpen={showNotes}
+          isMobile={isMobile}
           onClose={() => setShowNotes(false)}
         />
       </div>

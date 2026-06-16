@@ -33,12 +33,13 @@ interface NotesPanelProps {
   modelType: ModelType;
   isDark: boolean;
   isOpen: boolean;
+  isMobile?: boolean;
   onClose: () => void;
 }
 
 const PANEL_WIDTH = 560;
 
-export const NotesPanel: React.FC<NotesPanelProps> = ({ modelType, isDark, isOpen, onClose }) => {
+export const NotesPanel: React.FC<NotesPanelProps> = ({ modelType, isDark, isOpen, isMobile = false, onClose }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -68,6 +69,49 @@ export const NotesPanel: React.FC<NotesPanelProps> = ({ modelType, isDark, isOpe
   } as React.CSSProperties;
 
   const vars = isDark ? cssVarsDark : cssVarsLight;
+
+  // Mobile: fixed full-screen overlay sliding up from bottom
+  // Desktop: flex column that compresses the canvas (width animation)
+  if (isMobile) {
+    return (
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            key="notes-mobile"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 32, stiffness: 320, mass: 0.9 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 60,
+              display: 'flex',
+              flexDirection: 'column',
+              background: isDark ? '#0d0f1c' : '#ffffff',
+              ...vars,
+            }}
+          >
+            {/* Header */}
+            <div style={{ flexShrink: 0, padding: '14px 16px 12px', borderBottom: `1px solid ${isDark ? '#2a3252' : '#e2e8f0'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: isDark ? '#0c0e16' : '#f8fafc' }}>
+              <div>
+                <span style={{ display: 'block', fontSize: '9px', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: isDark ? '#6a7ba2' : '#94a3b8', marginBottom: 3 }}>{MODEL_TAGS[modelType]}</span>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: isDark ? '#818cf8' : '#4f46e5', lineHeight: 1.2 }}>{MODEL_LABELS[modelType]}</div>
+              </div>
+              <button onClick={onClose} style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.05em', padding: '7px 13px', borderRadius: 8, border: `1px solid ${isDark ? '#2a3252' : '#e2e8f0'}`, background: isDark ? '#1a1d2e' : '#f1f5f9', color: isDark ? '#6a7ba2' : '#64748b', cursor: 'pointer' }}>✕</button>
+            </div>
+            {/* Scrollable body */}
+            <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '20px 18px 40px' }}>
+              <div className="notes-prose" style={{ color: isDark ? '#e2e8f0' : '#0f172a' }}>
+                <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>{notes}</ReactMarkdown>
+              </div>
+            </div>
+            <div style={{ flexShrink: 0, padding: '8px 16px', borderTop: `1px solid ${isDark ? '#2a3252' : '#e2e8f0'}`, fontSize: '9px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: isDark ? '#3b4270' : '#cbd5e1' }}>Personal deep learning notes</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
 
   return (
     <AnimatePresence>

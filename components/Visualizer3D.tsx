@@ -338,7 +338,7 @@ interface VisualizerProps {
   model: ModelConfig;
   activeStageId: string | null;
   onStageSelect: (stage: ProcessingStage) => void;
-  onHoverStage?: (stage: ProcessingStage) => void;
+  onHoverStage?: (stage: ProcessingStage | null) => void;
   isDark: boolean;
   shadingStyle?: 'cyber' | 'clay' | 'wireframe';
   autoRotate?: boolean;
@@ -382,7 +382,7 @@ export const Visualizer3D: React.FC<VisualizerProps> = ({
 
   return (
     <div className="w-full h-full relative" style={{ background: bgColor }}>
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 backdrop-blur px-4 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-semibold pointer-events-none shadow-sm flex items-center gap-2 border"
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 backdrop-blur px-4 py-1.5 rounded-full text-[10px] uppercase tracking-wider font-semibold pointer-events-none shadow-sm flex items-center gap-2 border"
         style={{ background: hintBg, color: hintText, borderColor: isDark ? '#2a3252' : '#E2E8F0' }}>
         <span>Drag to rotate</span>
         <span className="text-slate-300">•</span>
@@ -408,7 +408,7 @@ export const Visualizer3D: React.FC<VisualizerProps> = ({
                 isActive={activeStageId === stage.id}
                 onClick={() => onStageSelect(stage)}
                 onPointerOver={() => onHoverStage?.(stage)}
-                onPointerOut={() => {}}
+                onPointerOut={() => onHoverStage?.(null)}
                 isDark={isDark}
                 shadingStyle={shadingStyle}
                 batchSize={batchSize}
